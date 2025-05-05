@@ -1,4 +1,4 @@
-$wslPath = "C:\apps\translate"
+$wslPath = "C:\apps\translate\generated"
 # $micName = "Microphone (ME6S)"
 $micName = "Microphone (Voicemod Virtual Audio Device (WDM))"
 
@@ -8,10 +8,10 @@ while ($true) {
     $finalFile = "$wslPath/mic.wav"
 
     # Record 5 seconds to a temporary file
-    ffmpeg -y -f dshow -i audio="$micName" -t 5 "$tempFile" | Out-Null
+    ffmpeg -y -f dshow -i audio="$micName" -t 6 "$tempFile" | Out-Null
 
     # Analyze the file for silence using silencedetect
-    $silenceOutput = ffmpeg -i "$tempFile" -af silencedetect=n=-30dB:d=0.5 -f null - 2>&1
+    $silenceOutput = ffmpeg -i "$tempFile" -af silencedetect=n=-28dB:d=0.5 -f null - 2>&1
 
     # Check if there are any lines indicating non-silence
     if ($silenceOutput -notmatch "silence_start") {

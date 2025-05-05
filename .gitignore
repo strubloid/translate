@@ -10,3 +10,7 @@ temp.wav
 
 # Temporary/personal scripts or logs
 translation.txt
+
+# Generated folder
+generated/mic.wav
+generated/temp.wav
