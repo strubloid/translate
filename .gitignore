@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Audio/temp files
+mic.wav
+temp.wav
+
+# Temporary/personal scripts or logs
+translation.txt
