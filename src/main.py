@@ -10,9 +10,9 @@ import os
 def main():
     try:
         api_key = load_env()
-        if not os.path.exists(GENERATED_DIR):
-            os.makedirs(GENERATED_DIR)
-            log(f"📁 Created output directory: {GENERATED_DIR}")
+        # if not os.path.exists(GENERATED_DIR):
+        #     os.makedirs(GENERATED_DIR)
+        #     log(f"📁 Created output directory: {GENERATED_DIR}")
 
         client = setup_openai(api_key)
         model = load_whisper_model()
@@ -21,10 +21,7 @@ def main():
         log("🎙️ Ready to listen. Speak into the microphone...")
 
         while True:
-            log("🎙️")
             audio_path = mic.listen_until_silence()
-            log("🎤")
-            log(f"📂 Audio captured to {audio_path}")
             process_audio(model, client, translate, file_path=audio_path)
             os.remove(audio_path)
 

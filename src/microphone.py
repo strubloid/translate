@@ -92,7 +92,7 @@ class Microphone:
                         if silence_start is None:
                             silence_start = time.time()
                         elif time.time() - silence_start > self.silence_timeout:
-                            print("🤫 Silence detected, stopping...")
+                            # print("🤫 Silence detected, stopping...")
                             break
 
         finally:
@@ -110,7 +110,7 @@ class Microphone:
             wave_file.setframerate(self.rate)
             wave_file.writeframes(b''.join(frames))
 
-        print(f"📁 Audio saved: {wf_path}")
+        # print(f"📁 Audio saved: {wf_path}")
         return wf_path
 
     ## Terminate the PyAudio stream and release resources.

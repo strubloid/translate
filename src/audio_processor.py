@@ -9,13 +9,14 @@ def process_audio(model, client, translate_func, file_path=None):
     try:
         audio_path = file_path or AUDIO_FILE
 
-        log("🎙️ Transcribing...")
-        result = model.transcribe(audio_path)
+        # log("🎙️ Transcribing...")
+        # result = model.transcribe(audio_path)
+        result = model.transcribe(audio_path, fp16=False)
         transcribed_text = result["text"].strip()
 
         if transcribed_text:
             log("📝 " + transcribed_text)
-            # translated = translate_func(transcribed_text, client)
+            translated = translate_func(transcribed_text, client)
             # print("🌍", translated)
             with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
                 f.write(transcribed_text)
