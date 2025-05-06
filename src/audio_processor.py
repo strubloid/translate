@@ -1,5 +1,5 @@
 import os
-from config import AUDIO_FILE, OUTPUT_FILE, log
+from config import AUDIO_FILE, OUTPUT_FILE, OUTPUT_TRANSCRIPTION_FILE, log
 
 ## This function will be used to translate the text
 # => It takes the text to be translated, the OpenAI client, and the target language as parameters.
@@ -15,11 +15,14 @@ def process_audio(model, client, translate_func, file_path=None):
         transcribed_text = result["text"].strip()
 
         if transcribed_text:
-            log("📝 " + transcribed_text)
+            # log("📝 " + transcribed_text)
+            with open(OUTPUT_TRANSCRIPTION_FILE, "w", encoding="utf-8") as f:
+                f.write(transcribed_text)
+            
             translated = translate_func(transcribed_text, client)
             # print("🌍", translated)
             with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-                f.write(transcribed_text)
+                f.write(translated)
         else:
             log("🤐 Nothing meaningful to transcribe.")
             with open(OUTPUT_FILE, "w", encoding="utf-8") as f:

@@ -8,6 +8,7 @@ load_dotenv()
 VERBOSE = os.getenv("VERBOSE", "True").lower() in ("true", "1", "yes")
 GENERATED_DIR = os.getenv("GENERATED_DIR", "generated")
 AUDIO_FILE = os.path.join(GENERATED_DIR, os.getenv("AUDIO_FILE", "mic.wav"))
+OUTPUT_TRANSCRIPTION_FILE = os.path.join(GENERATED_DIR, os.getenv("OUTPUT_TRANSCRIPTION_FILE", "transcription.txt"))
 OUTPUT_FILE = os.path.join(GENERATED_DIR, os.getenv("OUTPUT_FILE", "translation.txt"))
 
 # Options: tiny, base, small, medium, large

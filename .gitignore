@@ -12,6 +12,7 @@ temp.wav
 translation.txt
 
 # Generated folder
+generated
 generated/mic.wav
 generated/temp.wav
 
