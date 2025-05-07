@@ -2,11 +2,10 @@ import pyaudio
 import wave
 import time
 import collections
-import tempfile
 import webrtcvad
 from dotenv import load_dotenv, set_key
 import os
-from config import AUDIO_FILE, OUTPUT_FILE, OUTPUT_TRANSCRIPTION_FILE, log
+from ConfigObject import ConfigObject
 
 class MicrophoneObject:
 
@@ -17,29 +16,33 @@ class MicrophoneObject:
     # @param device_name: The name of the microphone device to use.
     # @param aggressiveness: The aggressiveness level for the VAD (0-3).
     # @param silence_timeout: The duration of silence (in seconds) to wait before stopping the recording.
-    def __init__(self, env_path=".env", aggressiveness=2, silence_timeout=1.0):
+    def __init__(self,config : ConfigObject, env_path=".env", aggressiveness=2, silence_timeout=1.0):
+        
+        ## loading the main environment variables
+        self.config = config
+
         load_dotenv(env_path)
         self.env_path = env_path
-        self.device_index = os.getenv("MICROPHONE")
+        self.device_index = config.getMicrophoneIndex()
         self.aggressiveness = aggressiveness
-        self.silence_timeout = silence_timeout
-
+        self.silence_timeout = silence_timeout        
         self.format = pyaudio.paInt16
         self.channels = 1
         self.rate = 16000
-        self.frame_duration = 30  # ms
+        self.frame_duration = 30 # microseconds
         self.frame_size = int(self.rate * self.frame_duration / 1000)
-
         self.p = pyaudio.PyAudio()
         self.device_index = self.getDeviceIndex()
-
         self.vad = webrtcvad.Vad(self.aggressiveness)
 
     ## Get the index of the microphone device based on its name.
     def getDeviceIndex(self):
+
+        ## Check if the device index is already set in the environment variable.
         if self.device_index and self.device_index.strip().isdigit():
             return int(self.device_index)
-
+        
+        ## If not set, prompt the user to select a microphone device.
         print("\n🎤 No MICROPHONE index set in .env. Listing available input devices:\n")
         input_devices = []
         for i in range(self.p.get_device_count()):
@@ -48,6 +51,7 @@ class MicrophoneObject:
                 print(f"{i}: {info['name']}")
                 input_devices.append((i, info["name"]))
 
+        ## This will be set the default microphone
         selected = input("🔧 Enter the number of the microphone you'd like to use: ").strip()
         if selected.isdigit():
             selected_index = int(selected)
@@ -89,7 +93,7 @@ class MicrophoneObject:
                     ring_buffer.append(data)
                     if is_speech:
                         triggered = True
-                        print("🔊 Voice detected, recording...")
+                        print("🔊 Recording")
                         frames.extend(ring_buffer)
                         ring_buffer.clear()
                 else:
@@ -100,7 +104,7 @@ class MicrophoneObject:
                         if silence_start is None:
                             silence_start = time.time()
                         elif time.time() - silence_start > self.silence_timeout:
-                            print("🤫 Silence detected, stopping...")
+                            print("🤫 Stopping...")
                             break
 
         finally:
@@ -118,7 +122,6 @@ class MicrophoneObject:
             wave_file.setframerate(self.rate)
             wave_file.writeframes(b''.join(frames))
 
-        # print(f"📁 Audio saved: {wf_path}")
         return wf_path
 
     ## Terminate the PyAudio stream and release resources.

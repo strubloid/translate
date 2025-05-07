@@ -1,5 +1,6 @@
 from openai import OpenAI, AuthenticationError
-from config import log, TRANSLATION_MODEL
+from ConfigObject import ConfigObject
+from LogObject import LogObject
 import os
 
 class OpenAIObject:
@@ -8,16 +9,17 @@ class OpenAIObject:
     key = None
 
     ## Main constructor will just setup the variables
-    def __init__(self):
+    def __init__(self, config : ConfigObject):
         self.client = None
         self.key = self.getKey()
+        self.config = config
 
     # Sets up the OpenAI client with the API key
     def setup(self, api_key):
         try:
             self.client = OpenAI(api_key=api_key)
             self.client.models.list()
-            log("✅ OpenAI connection verified.")
+            LogObject.log("✅ OpenAI connection verified.")
             return self.client
         
         except AuthenticationError:

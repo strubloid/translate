@@ -1,8 +1,9 @@
-from config import checkingEnvironmentVariables, OUTPUT_FILE, OUTPUT_TRANSCRIPTION_FILE,TRANSLATION_LANGUAGE, log
+from ConfigObject import ConfigObject
 from MicrophoneObject import MicrophoneObject
 from OpenAIObject import OpenAIObject
 from WhisperObject import WhisperObject
-from translator import translate
+from TranslatorObject import TranslatorObject
+from LogObject import LogObject
 import os
 
 def main():
@@ -10,22 +11,23 @@ def main():
     try:
 
         ## Loading the environment variables and returning an api_key
-        checkingEnvironmentVariables()
+        config = ConfigObject()
+        config.checkingEnvironmentVariables()
 
         ## starting the client
-        openAiObject = OpenAIObject()
+        openAiObject = OpenAIObject(config)
 
         ## loading the client of OpenAI
         client = openAiObject.setup(openAiObject.getKey())
         
         ## Loading the whisper model and getting eh model
-        whisperObject = WhisperObject()
+        whisperObject = WhisperObject(config)
         model = whisperObject.getModel()
 
         ## Loading the microphone object
-        mic = MicrophoneObject()
+        mic = MicrophoneObject(config)
 
-        log("🎙️ Ready to listen. Speak into the microphone...")
+        LogObject.log("🎙️ Ready to listen. Speak into the microphone...")
 
         while True:
             
@@ -39,18 +41,18 @@ def main():
                 if transcribed_text:
 
                     ## Prints out the transcribed text on OUTPUT_TRANSCRIPTION_FILE
-                    with open(OUTPUT_TRANSCRIPTION_FILE, "w", encoding="utf-8") as f:
+                    with open(config.getOutputTranscriptionFile(), "w", encoding="utf-8") as f:
                         f.write(transcribed_text)
                     
                     ## Getting the the text translated to the TRANSLATION_LANGUAGE
-                    translated = translate(transcribed_text, client, TRANSLATION_LANGUAGE)
+                    translated = TranslatorObject.translate(transcribed_text, client, config.getTranslationLanguage())
 
                     ## Prints out the translated text on OUTPUT_FILE
-                    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+                    with open(config.getOutputFile(), "w", encoding="utf-8") as f:
                         f.write(translated)
                 else:
                     ## cleans it, in case of no text detected
-                    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+                    with open(config.getOutputFile(), "w", encoding="utf-8") as f:
                         f.write("")
 
             except Exception as e:

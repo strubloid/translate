@@ -1,5 +1,7 @@
 import whisper
-from config import MODEL_SIZE, log
+from ConfigObject import ConfigObject
+
+from LogObject import LogObject
 
 import warnings
 warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
@@ -9,8 +11,14 @@ class WhisperObject:
     model = None
     modelSize = None
 
-    def __init__(self):
-        self.modelSize = MODEL_SIZE
+    ## Starting the WhisperObject class
+    # => It initializes the class with a configuration object.
+    # => It sets the model size and loads the Whisper model.
+    # => The model size is obtained from the configuration object.
+    # => The loadingWhisperModel function is called to load the model.
+    def __init__(self, config : ConfigObject):
+        self.config = config
+        self.modelSize = config.getModelSize()
         self.model = self.loadingWhisperModel()
 
     ## This function loads the Whisper model and returns a model object.
@@ -19,10 +27,10 @@ class WhisperObject:
     # => The function also logs the loading process, indicating whether it was successful or not.
     def loadingWhisperModel(self):
 
-        log("🔄 Loading Whisper model...")
+        LogObject.log("🔄 Loading Whisper model...")
         try:
             model = whisper.load_model(self.modelSize)
-            log("✅ Whisper model loaded.")
+            LogObject.log("✅ Whisper model loaded.")
             return model
         
         except Exception as e:
