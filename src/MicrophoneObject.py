@@ -6,8 +6,9 @@ import tempfile
 import webrtcvad
 from dotenv import load_dotenv, set_key
 import os
+from config import AUDIO_FILE, OUTPUT_FILE, OUTPUT_TRANSCRIPTION_FILE, log
 
-class Microphone:
+class MicrophoneObject:
 
     ## Class to handle microphone input and voice activity detection.
     # It uses the PyAudio library to access the microphone and the webrtcvad library
@@ -30,12 +31,12 @@ class Microphone:
         self.frame_size = int(self.rate * self.frame_duration / 1000)
 
         self.p = pyaudio.PyAudio()
-        self.device_index = self._get_device_index()
+        self.device_index = self.getDeviceIndex()
 
         self.vad = webrtcvad.Vad(self.aggressiveness)
 
     ## Get the index of the microphone device based on its name.
-    def _get_device_index(self):
+    def getDeviceIndex(self):
         if self.device_index and self.device_index.strip().isdigit():
             return int(self.device_index)
 
@@ -57,13 +58,15 @@ class Microphone:
         raise ValueError("❌ Invalid microphone selection.")
 
     ## Listen to the microphone until silence is detected for a specified duration.
-    def listen_until_silence(self):
-        stream = self.p.open(format=self.format,
-                            channels=self.channels,
-                            rate=self.rate,
-                            input=True,
-                            input_device_index=self.device_index,
-                            frames_per_buffer=self.frame_size)
+    def listenUntilSilence(self):
+
+        ## Open the microphone stream for recording.
+        stream = self.p.open(format=self.format
+            , channels=self.channels
+            , rate=self.rate
+            , input=True
+            , input_device_index=self.device_index
+            , frames_per_buffer=self.frame_size)
 
         frames = []
         ring_buffer = collections.deque(maxlen=int(self.silence_timeout * 1000 / self.frame_duration))
@@ -74,7 +77,12 @@ class Microphone:
 
         try:
             while True:
+                
+                ## Read audio data from the stream and check for voice activity.
                 data = stream.read(self.frame_size, exception_on_overflow=False)
+
+                ## Check if the audio data is speech using VAD.
+                ## The VAD will return True if it detects speech, and False otherwise.
                 is_speech = self.vad.is_speech(data, self.rate)
 
                 if not triggered:
@@ -92,7 +100,7 @@ class Microphone:
                         if silence_start is None:
                             silence_start = time.time()
                         elif time.time() - silence_start > self.silence_timeout:
-                            # print("🤫 Silence detected, stopping...")
+                            print("🤫 Silence detected, stopping...")
                             break
 
         finally:

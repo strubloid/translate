@@ -14,8 +14,16 @@ OUTPUT_FILE = os.path.join(GENERATED_DIR, os.getenv("OUTPUT_FILE", "translation.
 # Options: tiny, base, small, medium, large
 MODEL_SIZE = os.getenv("MODEL_SIZE", "small")
 TRANSLATION_MODEL = os.getenv("TRANSLATION_MODEL", "gpt-3.5-turbo")  # Use gpt-4 if needed
+TRANSLATION_LANGUAGE = os.getenv("TRANSLATION_LANGUAGE", "pt")
 
 # Log function, it works by this main VERBOSE variable
 def log(msg):
     if VERBOSE:
         print(msg)
+
+## Basic rules to load the environment variables, just a small check before starting the program
+def checkingEnvironmentVariables():
+    
+    log("🔍 Checking environment...")
+    if not os.path.exists(".env"):
+        raise FileNotFoundError("❌ Missing .env file.")
