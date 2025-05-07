@@ -5,6 +5,8 @@ from WhisperObject import WhisperObject
 from TranslatorObject import TranslatorObject
 from LogObject import LogObject
 import os
+import time
+import torch
 
 def main():
 
@@ -26,6 +28,9 @@ def main():
 
         ## Loading the microphone object
         mic = MicrophoneObject(config)
+        language = TranslatorObject.language()
+        print(f"🌐 Translate to {language} ")
+        print(f"🗣️ CUDA: {torch.cuda.is_available()}")
 
         LogObject.log("🎙️ Ready to listen. Speak into the microphone...")
 
@@ -35,7 +40,11 @@ def main():
 
                 ## the mic object will listen until silence
                 audio_path = mic.listenUntilSilence()
+
+                trasncriptionTime = time.perf_counter()
                 result = model.transcribe(audio_path, fp16=False)
+                print(f"⏱️ Transcription took: {time.perf_counter() - trasncriptionTime:.2f}s")
+
                 transcribed_text = result["text"].strip()
 
                 if transcribed_text:
@@ -45,7 +54,9 @@ def main():
                         f.write(transcribed_text)
                     
                     ## Getting the the text translated to the TRANSLATION_LANGUAGE
-                    translated = TranslatorObject.translate(transcribed_text, client, config.getTranslationLanguage())
+                    translationTime = time.perf_counter()
+                    translated = TranslatorObject.translate(transcribed_text, client)
+                    print(f"⏱️ Translation took: {time.perf_counter() - translationTime:.2f}s")
 
                     ## Prints out the translated text on OUTPUT_FILE
                     with open(config.getOutputFile(), "w", encoding="utf-8") as f:

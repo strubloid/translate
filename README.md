@@ -21,3 +21,18 @@ Strubloid Translate is a Python-based project for real-time audio transcription 
    git clone https://github.com/your-repo/strubloid-translate.git
    cd strubloid-translate
    ```
+
+2. Installation
+   ```bash
+      pip install .
+    ```
+
+3. Extra commands
+   ```bash
+      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+      or
+
+      pip install --force-reinstall --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+   ```

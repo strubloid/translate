@@ -6,6 +6,10 @@ from LogObject import LogObject
 import warnings
 warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+
 class WhisperObject:
 
     model = None

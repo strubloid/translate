@@ -9,7 +9,6 @@ description = "Real-time audio transcription and translation using OpenAI Whispe
 authors = [{ name = "Strubloid" }]
 requires-python = ">=3.8"
 dependencies = [
-    "torch",
     "numpy",
     "ffmpeg-python",
     "tqdm",
