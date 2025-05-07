@@ -6,7 +6,10 @@ from LogObject import LogObject
 load_dotenv()
 
 class ConfigObject:
+
+    ## This class is used to manage the configuration settings for the application.
     def __init__(self):
+        self.openaiApiKey = os.getenv("OPENAI_API_KEY", "")
         self.generatedDir = os.getenv("GENERATED_DIR", "generated")
         self.audioFile = os.path.join(self.generatedDir, os.getenv("AUDIO_FILE", "mic.wav"))
         self.outputTranscriptionFile = os.path.join(self.generatedDir, os.getenv("OUTPUT_TRANSCRIPTION_FILE", "transcription.txt"))
@@ -17,11 +20,11 @@ class ConfigObject:
         self.microphoneIndex = os.getenv("MICROPHONE" , "1")
 
     # Getters for each variable
+    def getOpenaiApiKey(self):
+        return self.openaiApiKey
+      
     def getMicrophoneIndex(self):
         return self.microphoneIndex
-
-    def getVerbose(self):
-        return self.verbose
 
     def getGeneratedDir(self):
         return self.generatedDir

@@ -7,6 +7,7 @@ class OpenAIObject:
 
     client = None
     key = None
+    config = None
 
     ## Main constructor will just setup the variables
     def __init__(self, config : ConfigObject):

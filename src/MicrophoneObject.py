@@ -112,8 +112,8 @@ class MicrophoneObject:
             stream.close()
 
         ## Save the recorded audio to a temporary WAV file.
-        os.makedirs("generated", exist_ok=True)
-        wf_path = os.path.join("generated", "mic.wav")
+        os.makedirs(self.config.getGeneratedDir(), exist_ok=True)
+        wf_path = self.config.getAudioFile()
         
         # Save audio
         with wave.open(wf_path, 'wb') as wave_file:
