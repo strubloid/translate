@@ -19,8 +19,12 @@ class ConfigObject:
         self.translationLanguage = os.getenv("TRANSLATION_LANGUAGE", "pt")
         self.microphoneIndex = os.getenv("MICROPHONE" , "1")
         self.frameDuration = os.getenv("FRAME_DURATION" , "30")
+        self.silenceTimeout = os.getenv("SILENCE_TIMEOUT" , "1.0")
 
     # Getters for each variable
+    def getSilenceTimeout(self):
+        return self.silenceTimeout
+    
     def getFrameDuration(self):
         return self.frameDuration
     

@@ -1,76 +1,55 @@
-import pyaudio
-import wave
+import os
 import time
+import wave
 import collections
+import pyaudio
 import webrtcvad
 from dotenv import load_dotenv, set_key
-import os
 from ConfigObject import ConfigObject
 
-
 class MicrophoneObject:
-    
-    ## Class to handle microphone input and voice activity detection.
-    ## It uses the PyAudio library to access the microphone and the webrtcvad library
-    ## for voice activity detection. The class captures audio until silence is detected
-    ## for a specified duration, and saves the audio to a temporary WAV file.
-    ## @param device_name: The name of the microphone device to use.
-    ## @param aggressiveness: The aggressiveness level for the VAD (0-3).
-    ## @param silence_timeout: The duration of silence (in seconds) to wait before stopping the recording.
-    def __init__(self, config: ConfigObject, env_path=".env", aggressiveness=2, silence_timeout=1.0):
-        
-        ## loading the main environment variables
-        self.config = config
 
+    ## This class is used to manage microphone input and voice activity detection (VAD).
+    # It uses the PyAudio library to capture audio and the webrtcvad library for VAD.
+    # The class allows for configuration of microphone settings, including aggressiveness and silence timeout.
+    def __init__(self, config: ConfigObject, env_path=".env", aggressiveness=3, silence_timeout=1.0):
+        self.config = config
         load_dotenv(env_path)
         self.env_path = env_path
         self.device_index = config.getMicrophoneIndex()
         self.aggressiveness = aggressiveness
-        self.silence_timeout = silence_timeout
+        self.silence_timeout = float(config.getSilenceTimeout())
 
         self.format = pyaudio.paInt16
         self.channels = 1
         self.rate = 16000
-
-        # Frame duration in ms (10–20ms typical for real-time audio)
         self.frame_duration = int(config.getFrameDuration())
-        print(f"⌚ Frame: {self.frame_duration}ms")
-
         self.frame_size = int(self.rate * self.frame_duration / 1000)
+
         self.p = pyaudio.PyAudio()
         self.device_index = self.getDeviceIndex()
         self.vad = webrtcvad.Vad(self.aggressiveness)
 
-    ## Get the index of the microphone device based on its name.
+    ## Check if the microphone index is valid
     def getDeviceIndex(self):
-        
-        ## Return the device index from .env or prompt user to select one.
         if self.device_index and self.device_index.strip().isdigit():
             return int(self.device_index)
 
-        ## If not set, prompt the user to select a microphone device.
-        print("\n🎤 No MICROPHONE index set in .env. Listing available input devices:\n")
-
-        input_devices = []
         for i in range(self.p.get_device_count()):
             info = self.p.get_device_info_by_index(i)
             if info["maxInputChannels"] > 0:
                 print(f"{i}: {info['name']}")
-                input_devices.append((i, info["name"]))
 
-        ## This will be set the default microphone
-        selected = input("🔧 Enter the number of the microphone you'd like to use: ").strip()
+        selected = input("Enter microphone index: ").strip()
         if selected.isdigit():
             selected_index = int(selected)
             set_key(self.env_path, "MICROPHONE", str(selected_index))
-            print(f"✅ Saved MICROPHONE={selected_index} to {self.env_path}")
             return selected_index
 
-        raise ValueError("❌ Invalid microphone selection.")
+        raise ValueError("Invalid microphone selection.")
 
-    ## Listen to the microphone until silence is detected for a specified duration.
+    ## This function listens to the microphone until silence is detected.
     def listenUntilSilence(self):
-        """Listen to the microphone and record until silence is detected."""
         stream = self.p.open(format=self.format,
                              channels=self.channels,
                              rate=self.rate,
@@ -81,53 +60,53 @@ class MicrophoneObject:
         frames = bytearray()
         ring_buffer = collections.deque(maxlen=int(self.silence_timeout * 1000 / self.frame_duration))
         triggered = False
-        silence_start = None
+        consecutive_silence_frames = 0
+        required_silence_frames = int(self.silence_timeout * 1000 / self.frame_duration)
 
-        print("🎙️ Listening...")
+        max_recording_seconds = 15
+        start_time = time.time()
 
         try:
             while True:
-
-                ## Reading audio data from the stream and checking for voice activity.            
+                if time.time() - start_time > max_recording_seconds:
+                    break
+                
+                ## Read audio data from the stream and check for speech activity
                 data = stream.read(self.frame_size, exception_on_overflow=False)
 
-                ## Check if the audio data is speech using VAD.
-                ## The VAD will return True if it detects speech, and False otherwise.
+                ## Check if the audio data is speech or silence using VAD
                 is_speech = self.vad.is_speech(data, self.rate)
 
+                ## if isnt triggered, append the data to the ring buffer
                 if not triggered:
                     ring_buffer.append(data)
                     if is_speech:
                         triggered = True
-                        print("🔊 Recording")
                         for chunk in ring_buffer:
                             frames.extend(chunk)
                         ring_buffer.clear()
                 else:
+                    ## else we append the data to the ring buffer and check if it is speech or silence
                     frames.extend(data)
                     if is_speech:
-                        silence_start = None
+                        consecutive_silence_frames = 0
                     else:
-                        if silence_start is None:
-                            silence_start = time.time()
-                        elif time.time() - silence_start > self.silence_timeout:
-                            print("🤫 Stopping...")
+                        consecutive_silence_frames += 1
+                        if consecutive_silence_frames >= required_silence_frames:
                             break
         finally:
             stream.stop_stream()
             stream.close()
 
-        # Save the recorded audio
         return self.saveAudio(frames)
 
-    ## Save the recorded frames to a WAV file
+    ## This function saves the recorded audio frames to a WAV file.
+    # It creates the directory if it doesn't exist and writes the audio data to the file.
+    # The file path is returned for further processing.
     def saveAudio(self, frames: bytearray) -> str:
-        
-        ## generate the directory
         os.makedirs(self.config.getGeneratedDir(), exist_ok=True)
         wf_path = self.config.getAudioFile()
 
-        ## saving the audio
         with wave.open(wf_path, 'wb') as wave_file:
             wave_file.setnchannels(self.channels)
             wave_file.setsampwidth(self.p.get_sample_size(self.format))
@@ -136,6 +115,7 @@ class MicrophoneObject:
 
         return wf_path
 
-    ## Terminate the PyAudio stream and release resources.
+    ## This function terminates the PyAudio stream and releases resources.
+    # It is important to call this function when the microphone is no longer needed to avoid resource leaks.
     def terminate(self):
         self.p.terminate()
