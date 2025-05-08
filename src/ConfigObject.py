@@ -18,8 +18,12 @@ class ConfigObject:
         self.translationModel = os.getenv("TRANSLATION_MODEL", "gpt-3.5-turbo")
         self.translationLanguage = os.getenv("TRANSLATION_LANGUAGE", "pt")
         self.microphoneIndex = os.getenv("MICROPHONE" , "1")
+        self.frameDuration = os.getenv("FRAME_DURATION" , "30")
 
     # Getters for each variable
+    def getFrameDuration(self):
+        return self.frameDuration
+    
     def getOpenaiApiKey(self):
         return self.openaiApiKey
       

@@ -7,16 +7,17 @@ from dotenv import load_dotenv, set_key
 import os
 from ConfigObject import ConfigObject
 
-class MicrophoneObject:
 
+class MicrophoneObject:
+    
     ## Class to handle microphone input and voice activity detection.
-    # It uses the PyAudio library to access the microphone and the webrtcvad library
-    # for voice activity detection. The class captures audio until silence is detected
-    # for a specified duration, and saves the audio to a temporary WAV file.
-    # @param device_name: The name of the microphone device to use.
-    # @param aggressiveness: The aggressiveness level for the VAD (0-3).
-    # @param silence_timeout: The duration of silence (in seconds) to wait before stopping the recording.
-    def __init__(self,config : ConfigObject, env_path=".env", aggressiveness=2, silence_timeout=1.0):
+    ## It uses the PyAudio library to access the microphone and the webrtcvad library
+    ## for voice activity detection. The class captures audio until silence is detected
+    ## for a specified duration, and saves the audio to a temporary WAV file.
+    ## @param device_name: The name of the microphone device to use.
+    ## @param aggressiveness: The aggressiveness level for the VAD (0-3).
+    ## @param silence_timeout: The duration of silence (in seconds) to wait before stopping the recording.
+    def __init__(self, config: ConfigObject, env_path=".env", aggressiveness=2, silence_timeout=1.0):
         
         ## loading the main environment variables
         self.config = config
@@ -25,11 +26,16 @@ class MicrophoneObject:
         self.env_path = env_path
         self.device_index = config.getMicrophoneIndex()
         self.aggressiveness = aggressiveness
-        self.silence_timeout = silence_timeout        
+        self.silence_timeout = silence_timeout
+
         self.format = pyaudio.paInt16
         self.channels = 1
         self.rate = 16000
-        self.frame_duration = 30 # microseconds
+
+        # Frame duration in ms (10–20ms typical for real-time audio)
+        self.frame_duration = int(config.getFrameDuration())
+        print(f"⌚ Frame: {self.frame_duration}ms")
+
         self.frame_size = int(self.rate * self.frame_duration / 1000)
         self.p = pyaudio.PyAudio()
         self.device_index = self.getDeviceIndex()
@@ -37,13 +43,14 @@ class MicrophoneObject:
 
     ## Get the index of the microphone device based on its name.
     def getDeviceIndex(self):
-
-        ## Check if the device index is already set in the environment variable.
+        
+        ## Return the device index from .env or prompt user to select one.
         if self.device_index and self.device_index.strip().isdigit():
             return int(self.device_index)
-        
+
         ## If not set, prompt the user to select a microphone device.
         print("\n🎤 No MICROPHONE index set in .env. Listing available input devices:\n")
+
         input_devices = []
         for i in range(self.p.get_device_count()):
             info = self.p.get_device_info_by_index(i)
@@ -63,26 +70,25 @@ class MicrophoneObject:
 
     ## Listen to the microphone until silence is detected for a specified duration.
     def listenUntilSilence(self):
+        """Listen to the microphone and record until silence is detected."""
+        stream = self.p.open(format=self.format,
+                             channels=self.channels,
+                             rate=self.rate,
+                             input=True,
+                             input_device_index=self.device_index,
+                             frames_per_buffer=self.frame_size)
 
-        ## Open the microphone stream for recording.
-        stream = self.p.open(format=self.format
-            , channels=self.channels
-            , rate=self.rate
-            , input=True
-            , input_device_index=self.device_index
-            , frames_per_buffer=self.frame_size)
-
-        frames = []
+        frames = bytearray()
         ring_buffer = collections.deque(maxlen=int(self.silence_timeout * 1000 / self.frame_duration))
         triggered = False
         silence_start = None
 
-        print("🎙️ Listening... Start speaking.")
+        print("🎙️ Listening...")
 
         try:
             while True:
-                
-                ## Read audio data from the stream and check for voice activity.
+
+                ## Reading audio data from the stream and checking for voice activity.            
                 data = stream.read(self.frame_size, exception_on_overflow=False)
 
                 ## Check if the audio data is speech using VAD.
@@ -94,10 +100,11 @@ class MicrophoneObject:
                     if is_speech:
                         triggered = True
                         print("🔊 Recording")
-                        frames.extend(ring_buffer)
+                        for chunk in ring_buffer:
+                            frames.extend(chunk)
                         ring_buffer.clear()
                 else:
-                    frames.append(data)
+                    frames.extend(data)
                     if is_speech:
                         silence_start = None
                     else:
@@ -106,21 +113,26 @@ class MicrophoneObject:
                         elif time.time() - silence_start > self.silence_timeout:
                             print("🤫 Stopping...")
                             break
-
         finally:
             stream.stop_stream()
             stream.close()
 
-        ## Save the recorded audio to a temporary WAV file.
+        # Save the recorded audio
+        return self.saveAudio(frames)
+
+    ## Save the recorded frames to a WAV file
+    def saveAudio(self, frames: bytearray) -> str:
+        
+        ## generate the directory
         os.makedirs(self.config.getGeneratedDir(), exist_ok=True)
         wf_path = self.config.getAudioFile()
-        
-        # Save audio
+
+        ## saving the audio
         with wave.open(wf_path, 'wb') as wave_file:
             wave_file.setnchannels(self.channels)
             wave_file.setsampwidth(self.p.get_sample_size(self.format))
             wave_file.setframerate(self.rate)
-            wave_file.writeframes(b''.join(frames))
+            wave_file.writeframes(frames)
 
         return wf_path
 
