@@ -33,4 +33,9 @@ class Translator(ABC):
         with open(path, "a", encoding="utf-8") as f:
             f.write(content)
             # Forces the buffer to write immediately
-            f.flush()  
+            f.flush()
+
+    ## Method to clean a file by truncating it.
+    def cleanFile(self, path):
+        with open(path, "w", encoding="utf-8") as f:
+            f.truncate()

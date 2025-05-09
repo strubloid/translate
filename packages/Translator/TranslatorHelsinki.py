@@ -3,11 +3,10 @@ from transformers import MarianMTModel, MarianTokenizer
 import torch
 
 ## Local translator using MarianMT (English → Portuguese)
-class TranslatorLocal(Translator):
+class TranslatorHelsinki(Translator):
 
     def __init__(self, config=None):
         super().__init__(config)
-        # print("🧠 Loading local MarianMT model for translation...")
 
         # Correct model for Romance language translation (including pt-BR)
         model_name = "Helsinki-NLP/opus-mt-en-ROMANCE"
@@ -23,11 +22,12 @@ class TranslatorLocal(Translator):
         ## Small change for pt-br fix
         self.targetLanguage = "pt" if self.targetLanguage == "pt-br" else self.targetLanguage
 
-        # print(f"🚀 Translator ready on {self.device.upper()}")
-
+    ## Here we will be using the MarianMT model to translate text.
+    # => The function takes the text to be translated and an optional client parameter (unused).
+    # => It constructs a prompt for translation, tokenizes the input, and generates the translation.
+    # => The translated text is decoded and returned.
     def translate(self, text, client=None):  # client is unused
-        print("🌐 Translating locally...")
-
+        
         if self.config and hasattr(self.config, "getOutputFile"):
             path = self.config.getOutputFile()
             with open(path, "w", encoding="utf-8") as f:

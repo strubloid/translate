@@ -2,7 +2,7 @@ from packages.Config.ConfigObject import ConfigObject
 from packages.Microphone.MicrophoneObject import MicrophoneObject
 from packages.OpenAI.OpenAIObject import OpenAIObject
 from packages.Whisper.WhisperObject import WhisperObject
-from packages.Translator.TranslatorLocal import TranslatorLocal
+from packages.Translator.TranslatorHelsinki import TranslatorHelsinki
 from packages.Translator.TranslatorGPT import TranslatorGPT
 from packages.Translator.Translator import Translator
 from packages.Log.LogObject import LogObject
@@ -35,7 +35,7 @@ def main():
 
         ## Satrting the translator object
         # translatorObject = TranslatorGPT(config)
-        translatorObject = TranslatorLocal(config)
+        translatorObject = TranslatorHelsinki(config)
         
         print(f"🌐 Translate to {translatorObject.getTargetLanguage()} ")
         print(f"🗣️ CUDA: {torch.cuda.is_available()}")
