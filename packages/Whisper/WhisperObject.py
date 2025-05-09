@@ -1,6 +1,6 @@
 # import whisper
-from ConfigObject import ConfigObject
-from LogObject import LogObject
+from packages.Config.ConfigObject import ConfigObject
+from packages.Log.LogObject import LogObject
 from faster_whisper import WhisperModel
 import torch
 

@@ -1,9 +1,11 @@
-from ConfigObject import ConfigObject
-from MicrophoneObject import MicrophoneObject
-from OpenAIObject import OpenAIObject
-from WhisperObject import WhisperObject
-from TranslatorObject import TranslatorObject
-from LogObject import LogObject
+from packages.Config.ConfigObject import ConfigObject
+from packages.Microphone.MicrophoneObject import MicrophoneObject
+from packages.OpenAI.OpenAIObject import OpenAIObject
+from packages.Whisper.WhisperObject import WhisperObject
+from packages.Translator.TranslatorLocal import TranslatorLocal
+from packages.Translator.TranslatorGPT import TranslatorGPT
+from packages.Translator.Translator import Translator
+from packages.Log.LogObject import LogObject
 import os
 import time
 import torch
@@ -25,12 +27,15 @@ def main():
         ## Loading the whisper model and getting eh model
         whisperObject = WhisperObject(config)
         model = whisperObject.getModel()
+        print(f"🤖 Whisper")
 
         ## Loading the microphone object
         mic = MicrophoneObject(config)
+        print("🎤 Microphone")
 
         ## Satrting the translator object
-        translatorObject = TranslatorObject(config)
+        # translatorObject = TranslatorGPT(config)
+        translatorObject = TranslatorLocal(config)
         
         print(f"🌐 Translate to {translatorObject.getTargetLanguage()} ")
         print(f"🗣️ CUDA: {torch.cuda.is_available()}")
@@ -55,7 +60,7 @@ def main():
 ## 2. Transcribe using Whisper.
 ## 3. Translate using OpenAI.
 ## 4. Save results to files.
-def processAudioCycle(mic, model, client, config, translatorObject : TranslatorObject):
+def processAudioCycle(mic, model, client, config, translatorObject : Translator):
     try:
         audio_path = mic.listenUntilSilence()
         start_time = time.perf_counter()
@@ -65,8 +70,7 @@ def processAudioCycle(mic, model, client, config, translatorObject : TranslatorO
 
         segments, info = model.transcribe(audio_path)
         transcribedText = "".join([segment.text for segment in segments])
-
-        # transcribedText = result["text"].strip()
+        # print(f"🗣️ Transcribed: {transcribedText}")
 
         if transcribedText:
             translatorObject.translate(transcribedText, client)

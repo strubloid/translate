@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from LogObject import LogObject
+from packages.Log.LogObject import LogObject
 
 # Load environment variables from .env file
 load_dotenv()

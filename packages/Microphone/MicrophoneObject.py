@@ -5,7 +5,7 @@ import collections
 import pyaudio
 import webrtcvad
 from dotenv import load_dotenv, set_key
-from ConfigObject import ConfigObject
+from packages.Config.ConfigObject import ConfigObject
 
 class MicrophoneObject:
 

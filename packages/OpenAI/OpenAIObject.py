@@ -1,6 +1,6 @@
 from openai import OpenAI, AuthenticationError
-from ConfigObject import ConfigObject
-from LogObject import LogObject
+from packages.Config.ConfigObject import ConfigObject
+from packages.Log.LogObject import LogObject
 import os
 
 class OpenAIObject:
