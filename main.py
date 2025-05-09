@@ -2,6 +2,7 @@ from packages.Config.ConfigObject import ConfigObject
 from packages.Microphone.MicrophoneObject import MicrophoneObject
 from packages.OpenAI.OpenAIObject import OpenAIObject
 from packages.Whisper.WhisperObject import WhisperObject
+from packages.Translator.TranslatorFacebook import TranslatorFacebook
 from packages.Translator.TranslatorHelsinki import TranslatorHelsinki
 from packages.Translator.TranslatorGPT import TranslatorGPT
 from packages.Translator.Translator import Translator
@@ -34,8 +35,8 @@ def main():
         print("🎤 Microphone")
 
         ## Satrting the translator object
-        # translatorObject = TranslatorGPT(config)
-        translatorObject = TranslatorHelsinki(config)
+        translatorObject = TranslatorGPT(config)
+        # translatorObject = TranslatorFacebook(config)
         
         print(f"🌐 Translate to {translatorObject.getTargetLanguage()} ")
         print(f"🗣️ CUDA: {torch.cuda.is_available()}")

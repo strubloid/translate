@@ -17,11 +17,15 @@ class ConfigObject:
         self.modelSize = os.getenv("MODEL_SIZE", "small")
         self.translationModel = os.getenv("TRANSLATION_MODEL", "gpt-3.5-turbo")
         self.translationLanguage = os.getenv("TRANSLATION_LANGUAGE", "pt")
+        self.fromTranslationLanguage = os.getenv("FROM_TRANSLATION_LANGUAGE", "en")
         self.microphoneIndex = os.getenv("MICROPHONE" , "1")
         self.frameDuration = os.getenv("FRAME_DURATION" , "30")
         self.silenceTimeout = os.getenv("SILENCE_TIMEOUT" , "1.0")
 
     # Getters for each variable
+    def getFromTranslationLanguage(self):
+        return self.fromTranslationLanguage
+    
     def getSilenceTimeout(self):
         return self.silenceTimeout
     

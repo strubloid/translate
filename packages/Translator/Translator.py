@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
-
+from ..Config.ConfigObject import ConfigObject
 # Load environment variables from .env file (used to configure model and language)
 load_dotenv()
 
@@ -10,7 +10,7 @@ class Translator(ABC):
 
     def __init__(self, config=None):
         # Initialize the translation model and configuration
-        self.config = config
+        self.config : ConfigObject = config
         self.translationModel = os.getenv("TRANSLATION_MODEL", "gpt-3.5-turbo")
         self.targetLanguage = os.getenv("TRANSLATION_LANGUAGE", "pt-br")
 
@@ -37,5 +37,11 @@ class Translator(ABC):
 
     ## Method to clean a file by truncating it.
     def cleanFile(self, path):
-        with open(path, "w", encoding="utf-8") as f:
-            f.truncate()
+
+        # Check if the config has a method to get the output file path
+        # and truncate the file if it exists.
+        if self.config and hasattr(self.config, "getOutputFile"):
+            path = self.config.getOutputFile()
+            if path:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.truncate()
