@@ -64,14 +64,10 @@ def processAudioCycle(mic, model, client, config, translatorObject : Translator)
     try:
         audio_path = mic.listenUntilSilence()
         start_time = time.perf_counter()
-
-        # result = model.transcribe(audio_path, fp16=False)
         # result = model.transcribe(audio_path, fp16=torch.cuda.is_available())
-
         segments, info = model.transcribe(audio_path)
         transcribedText = "".join([segment.text for segment in segments])
         # print(f"🗣️ Transcribed: {transcribedText}")
-
         if transcribedText:
             translatorObject.translate(transcribedText, client)
 

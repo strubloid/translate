@@ -44,11 +44,6 @@ class TranslatorGPT(Translator):
             content_part = getattr(chunk.choices[0].delta, "content", None)
             if content_part:
                 self.writeToOBS(self.config.getOutputFile(), content_part)
-                # Uncomment the following lines if you want to print the content part to the console
-                # print(content_part, end='', flush=True)
-                # with open(content_part, "a", encoding="utf-8") as f:  # Use "a" to append instead of overwriting
-                #     f.write(translated_text)
-                #     f.flush() # Forces the buffer to write immediately
                 translated_text += content_part
 
 

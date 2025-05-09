@@ -17,5 +17,8 @@ dependencies = [
     "numba",
     "typing-extensions",
     "python-dotenv>=0.21.0",
-    "openai-whisper @ git+https://github.com/openai/whisper.git"
+    "openai-whisper @ git+https://github.com/openai/whisper.git",
+    "transformers>=4.40.0",
+    "sentencepiece>=0.1.99",
+    "sacremoses>=0.0.53"
 ]

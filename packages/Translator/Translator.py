@@ -9,7 +9,6 @@ load_dotenv()
 class Translator(ABC):
 
     def __init__(self, config=None):
-        print("Initializing Translator... 1111111111")
         # Initialize the translation model and configuration
         self.config = config
         self.translationModel = os.getenv("TRANSLATION_MODEL", "gpt-3.5-turbo")
