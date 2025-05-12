@@ -9,7 +9,9 @@ class TranslatorHelsinki(Translator):
         super().__init__(config)
 
         # Correct model for Romance language translation (including pt-BR)
-        model_name = "Helsinki-NLP/opus-mt-en-ROMANCE"
+        # model_name = "Helsinki-NLP/opus-mt-en-ROMANCE"
+        model_name = "Helsinki-NLP/opus-mt-tc-big-en-pt"
+
 
         # Load tokenizer and model
         self.tokenizer = MarianTokenizer.from_pretrained(model_name)

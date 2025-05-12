@@ -35,8 +35,8 @@ def main():
         print("🎤 Microphone")
 
         ## Satrting the translator object
-        translatorObject = TranslatorGPT(config)
-        # translatorObject = TranslatorFacebook(config)
+        # translatorObject = TranslatorGPT(config)
+        translatorObject = TranslatorHelsinki(config)
         
         print(f"🌐 Translate to {translatorObject.getTargetLanguage()} ")
         print(f"🗣️ CUDA: {torch.cuda.is_available()}")
